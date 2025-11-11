@@ -72,9 +72,9 @@
 * Connect the **u-blox** to a **logging machine** (PC/embedded) that saves both observables and status messages.
 * Use an **SDR** (e.g., HackRF One) for *spoofing* and a **jammer** for *jamming* **only in controlled environments** and with **regulatory permission** (legal compliance and operational safety).
 
-## 7) Hardware
+## 7) Hardware and Software
 
-* **Hardware:**
+* **Receptor Hardware:**
   
   GNSS receptor/ u-blox Receiver  
   - https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html
@@ -82,3 +82,32 @@
  
   GNSS Antenna
   - https://www.sparkfun.com/u-blox-multi-band-active-gnss-antenna-l1-l5-ann-mb5.html
+ 
+* **Receptor Transmitter:**
+
+  - HackRF Uno: https://greatscottgadgets.com/hackrf/one/
+    For more information please go to the Reference Papper (GNSS interference and spoofing dataset ) in section 4. Experimental Design, Materials and Methods: (https://www.sciencedirect.com/science/article/pii/S2352340924002713?ref=pdf_download&fr=RR-2&rr=90ca5490ce63eda7)
+    | Radio Node                 | Parameter                         | Description                                                                       |
+| -------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| HackRF One transmiter node | Antenna                           | Antenna type                                                                      |
+| HackRF One transmiter node | Antenna type                      | 2G, 3G, 4G suction cup antenna, HackRF One applicable SMA internal needle antenna |
+| HackRF One transmiter node | Connector Type                    | SMA female thread female pin                                                      |
+| HackRF One transmiter node | Antenna Gain                      | 12dbi                                                                             |
+| HackRF One transmiter node | Antenna Height                    | 310mm                                                                             |
+| HackRF One transmiter node | Feeder Length                     | 3 m                                                                               |
+| HackRF One transmiter node | Operating Frequency               | 700MHZ-2700MHZ                                                                    |
+| HackRF One transmiter node | Impedance                         | 50Ω                                                                               |
+| HackRF One transmiter node | Voltage Standing Wave Ratio(VSWR) | ≤1.8                                                                              |
+| HackRF One transmiter node | Polarisation                      | Horizontal                                                                        |
+| HackRF One                 | Frequency Band                    | 1MHz-6GHz                                                                         |
+| HackRF One                 | RF Bandwidth                      | 20MHz                                                                             |
+| HackRF One                 | Maximum Transmit Power            | 15dBm                                                                             |
+| HackRF One                 | Maximum Received Power            | -5dBm                                                                             |
+
+ 
+* **Software:**
+
+  - GPS-SDR-SIM: GPS-SDR-SIM generates GPS baseband signal data streams, which can be converted to RF using software-defined radio (SDR) platforms (https://github.com/osqzss/gps-sdr-sim)
+  
+ 
+  
