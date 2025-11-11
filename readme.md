@@ -19,9 +19,23 @@
 
 ---
 ## Dataset
-If you want to download the dataset please go to these repositories. 
+* If you want to download the dataset please go to these repositories. 
 
-GNSS Dataset (with Interference and Spoofing) Part I (#https://data.mendeley.com/datasets/ccdgjcfvn5/1)
+- GNSS Dataset (with Interference and Spoofing) Part I (https://data.mendeley.com/datasets/ccdgjcfvn5/1)
+- GNSS Dataset (with Interference and Spoofing) Part II (https://data.mendeley.com/datasets/h43s4d4zfn/1)
+- GNSS Dataset (with Interference and Spoofing) Part III (https://data.mendeley.com/datasets/nxk9r22wd6/1)
+
+* Original Papper:
+
+- GNSS interference and spoofing dataset (https://www.sciencedirect.com/science/article/pii/S2352340924002713?ref=pdf_download&fr=RR-2&rr=90ca5490ce63eda7)
+
+* To download U Center program
+
+- U Center: https://www.u-blox.com/en/product/u-center
+
+* Hardware:
+  
+ - Go to hardware folder
 
 
 ## 1. Requirements & Environment
