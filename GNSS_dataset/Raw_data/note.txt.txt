@@ -1,0 +1,1 @@
+In this folder is supposed that is contained the folders of each day observed by the GNSS Device receptor

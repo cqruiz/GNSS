@@ -1,0 +1,91 @@
+% % 
+% Please place this script into the folder "./GNSS dataset/".
+% You can use this code to display the observations,
+% satellites information and PVT solutions from the processed data.
+% 
+% Here are some examples provided to demonstrate how to call the 
+% scripts to display data.
+% 
+% The contributors:
+% Xiaoyan Wang (xiaoyan_wang2020@163.com)
+% Jingjing Yang (yangjingjing@ynu.edu.cn)
+% Ming Huang (huangming@ynu.edu.cn)
+% 
+% 12/28 2023
+
+%%
+clear all;clc
+% Place "jsonlab" in the toolbox folder in the matlab installation directory
+addpath('E:\MATLAB\R2022b\toolbox\jsonlab')
+
+rootPath = 'G:\GNSSJson09_2\processed data';
+
+%% Reading single processed data file.
+% (1) Displaying all constellation and satellites during 2023 9/22 15:00:00 to 15:59:59
+clf;
+day=22;hour=15;
+func_SingleFileObservations(rootPath,day,hour)
+
+% (2)  Displaying Observations of all constellation and satellites during 2023 12/21 12:00:00 to 12:59:59
+% Spoofing attacks time   (see Table 10)
+%   start     end
+% 12:32:30	12:37:00
+% 12:38:41	12:41:20
+% 12:44:05	12:55:50
+% 12:57:00	12:59:59
+
+clf;
+rootPath_spoofing = 'G:\GNSSJson1221\processed data';
+day=21;hour=12;
+
+func_SingleFileObservations(rootPath_spoofing,day,hour)
+func_SingleFilePVT(rootPath_spoofing,day,hour)
+func_SingleFileSatInfo(rootPath_spoofing,day,hour)
+
+% (3)  Displaying Observations of all constellation and satellites during 
+% 2023 12/21 12:00:00 to 12:59:59
+% Jamming attacks time (see Table 10)
+%   start     end
+% 17:00:20	17:01:26
+% 17:03:00	17:04:00
+% 17:06:00	17:07:00
+clf;
+rootPath_jamming = 'G:\GNSSJson1221\processed data';
+day=21;hour=17;
+
+func_SingleFileObservations(rootPath_jamming,day,hour)
+func_SingleFilePVT(rootPath_jamming,day,hour)
+func_SingleFileSatInfo(rootPath_jamming,day,hour)
+
+%% Reading multiple files and concatenating them, which will consume 
+% some memory and waiting time during the processing.
+% 
+% (1) Reading and displaying GPS2 during 2023 9/12 00:00:00 to 00:59:59
+clf;
+days = [12];hours = [0];gnssId = 0;sats=[4,8,27,30];
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+
+% (2) Reading and displaying BDS20 during 2023 9/12 00:00:00 to 23:59:59
+clf;
+days = [22];hours = 0:1:23;gnssId = 3;sats=[20];
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+
+% (3) Reading and displaying all QZSS satellites during 2023 9/12 00:00:00 to 9/13 23:59:59
+clf;
+days = [12,13];hours = 0:1:23;gnssId = 0;sats=1:1:32;
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+clf;
+days = [12,13];hours = 0:1:23;gnssId = 2;sats=1:1:36;
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+clf;
+days = [12,13];hours = 0:1:23;gnssId = 3;sats=1:1:63;
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+clf;
+days = [12,13];hours = 0:1:23;gnssId = 5;sats=1:1:10;
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+clf;
+days = [12,13];hours = 0:1:23;gnssId = 6;sats=1:1:32;
+func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+
+
+

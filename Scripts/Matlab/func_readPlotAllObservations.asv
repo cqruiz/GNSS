@@ -1,0 +1,803 @@
+function func_readPlotAllObservations(rootPath,days,hours,gnssId,sats)
+% rootPath: data folder
+% days: day (s) for display, e.g. one day [12] or a few days: days = linspace(12,30,19);
+% hours: hour (s) for display, e.g. some hours [1,2,3] or a whole day (24h): hours = linspace(0,23,24);
+% sats: svId of displayed satellites, e.g. some satellites [1,2,3] or all GPS satellites: sats = linspace(1,32,32);
+% gnss/gnssId: 
+            % GPS  0
+            % Galileo 2
+            % BDS  3
+            % QZSS  5
+            % GLONASS 6
+para_message = struct();
+para_message.('gnssid0')='GPS';para_message.('gnssid2')='Galileo';para_message.('gnssid3')='BDS';
+para_message.('gnssid5')='QZSS';para_message.('gnssid6')='GLONASS';
+
+display(['Display constellation with gnssid = ',num2str(gnssId),' (',num2str(para_message.(['gnssid',num2str(gnssId)])),'), days=',num2str(days),', hours=', num2str(hours)])
+display(['And satellites with ID = ',num2str(sats),' will be selected to process and display'])
+display('Please waiting for loading json data ...')
+
+recordTime=[];
+% obs
+cn0_G1=[];cn0_G2=[];cn0_E1=[];cn0_E2=[];cn0_B1=[];cn0_B2=[];cn0_Q1=[];cn0_Q2=[];cn0_R1=[];cn0_R2=[];
+doMes_G1=[];doMes_G2=[];doMes_E1=[];doMes_E2=[];doMes_B1=[];doMes_B2=[];doMes_Q1=[];doMes_Q2=[];doMes_R1=[];doMes_R2=[];
+prMes_G1=[];prMes_G2=[];prMes_E1=[];prMes_E2=[];prMes_B1=[];prMes_B2=[];prMes_Q1=[];prMes_Q2=[];prMes_R1=[];prMes_R2=[];
+cpMes_G1=[];cpMes_G2=[];cpMes_E1=[];cpMes_E2=[];cpMes_B1=[];cpMes_B2=[];cpMes_Q1=[];cpMes_Q2=[];cpMes_R1=[];cpMes_R2=[];
+% satellite infomation
+elev_G = [];elev_E = [];elev_B = [];elev_Q = [];elev_R = [];
+azim_G = [];azim_E = [];azim_B = [];azim_Q = [];azim_R = [];
+% PVT solutions
+lon=[];height=[];lat=[];velE=[];velN=[];velD=[];
+ecefX=[];ecefY=[];ecefZ=[];clkB=[];clkD=[];tAcc=[];fAcc=[];
+gDOP=[];pDOP=[];tDOP=[];vDOP=[];hDOP=[];nDOP=[];eDOP=[];
+
+% read the processed data
+for day=days
+    for hour=hours
+        obsP=strcat(rootPath,'\',num2str(day),'\observation',num2str(hour),'.json')
+        obs = loadjson(obsP);
+        pvt = loadjson([rootPath,'\',num2str(day),'\pvtSolution',num2str(hour),'.json']);
+        satInfo = loadjson([rootPath,'\',num2str(day),'\satelliteInfomation',num2str(hour),'.json']);
+    
+        recordTime = [recordTime obs.recordTime];
+    
+        % obs
+        cn0_G1=[cn0_G1 obs.cn0_G1']; cn0_G2=[cn0_G2 obs.cn0_G2'];cn0_E1=[cn0_E1 obs.cn0_E1']; 
+        cn0_E2=[cn0_E2 obs.cn0_E2']; cn0_B1=[cn0_B1 obs.cn0_B1']; cn0_B2=[cn0_B2 obs.cn0_B2'];
+        cn0_Q1=[cn0_Q1 obs.cn0_Q1']; cn0_Q2=[cn0_Q2 obs.cn0_Q2'];
+        cn0_R1=[cn0_R1 obs.cn0_R1']; cn0_R2=[cn0_R2 obs.cn0_R2'];
+    
+        doMes_G1=[doMes_G1 obs.doMes_G1']; doMes_G2=[doMes_G2 obs.doMes_G2'];doMes_E1=[doMes_E1 obs.doMes_E1']; 
+        doMes_E2=[doMes_E2 obs.doMes_E2']; doMes_B1=[doMes_B1 obs.doMes_B1']; doMes_B2=[doMes_B2 obs.doMes_B2'];
+        doMes_Q1=[doMes_Q1 obs.doMes_Q1']; doMes_Q2=[doMes_Q2 obs.doMes_Q2'];
+        doMes_R1=[doMes_R1 obs.doMes_R1']; doMes_R2=[doMes_R2 obs.doMes_R2'];
+    
+        prMes_G1=[prMes_G1 obs.prMes_G1']; prMes_G2=[prMes_G2 obs.prMes_G2'];prMes_E1=[prMes_E1 obs.prMes_E1']; 
+        prMes_E2=[prMes_E2 obs.prMes_E2']; prMes_B1=[prMes_B1 obs.prMes_B1']; prMes_B2=[prMes_B2 obs.prMes_B2'];
+        prMes_Q1=[prMes_Q1 obs.prMes_Q1']; prMes_Q2=[prMes_Q2 obs.prMes_Q2'];
+        prMes_R1=[prMes_R1 obs.prMes_R1']; prMes_R2=[prMes_R2 obs.prMes_R2'];
+    
+        cpMes_G1=[cpMes_G1 obs.cpMes_G1']; cpMes_G2=[cpMes_G2 obs.cpMes_G2'];cpMes_E1=[cpMes_E1 obs.cpMes_E1']; 
+        cpMes_E2=[cpMes_E2 obs.cpMes_E2']; cpMes_B1=[cpMes_B1 obs.cpMes_B1']; cpMes_B2=[cpMes_B2 obs.cpMes_B2'];
+        cpMes_Q1=[cpMes_Q1 obs.cpMes_Q1']; cpMes_Q2=[cpMes_Q2 obs.cpMes_Q2'];
+        cpMes_R1=[cpMes_R1 obs.cpMes_R1']; cpMes_R2=[cpMes_R2 obs.cpMes_R2'];
+    
+        %sat info
+        % VS = [VS satInfo.svId_G'];
+        azim_G=[azim_G satInfo.azim_G'];azim_E=[azim_E satInfo.azim_E'];
+        azim_B=[azim_B satInfo.azim_B'];azim_Q=[azim_Q satInfo.azim_Q'];azim_R=[azim_R satInfo.azim_R'];
+        elev_G=[elev_G satInfo.elev_G'];elev_E=[elev_E satInfo.elev_E'];
+        elev_B=[elev_B satInfo.elev_B'];elev_Q=[elev_Q satInfo.elev_Q'];elev_R=[elev_R satInfo.elev_R'];
+    
+        %pvt
+        lon=[lon pvt.lon];lat=[lat pvt.lat];height=[height pvt.height];
+        ecefX=[ecefX pvt.ecefX];ecefY=[ecefY pvt.ecefY];ecefZ=[ecefZ pvt.ecefZ];
+        velE = [velE pvt.velE]; velN = [velE pvt.velN]; velD = [velE pvt.velD];
+        clkB = [clkB pvt.clkB]; clkD = [clkD pvt.clkD];tAcc=[tAcc pvt.tAcc];fAcc=[fAcc pvt.fAcc];
+        gDOP=[gDOP pvt.gDOP];pDOP=[pDOP pvt.pDOP];tDOP=[tDOP pvt.tDOP];vDOP=[vDOP pvt.vDOP];
+        hDOP=[hDOP pvt.hDOP];nDOP=[nDOP pvt.nDOP];eDOP=[eDOP pvt.eDOP];
+    end
+end
+
+%% plot 
+% display time at x axis
+len = length(recordTime);
+tNum = 3;
+subplotWid = 0.19;subplotht = 0.63;  
+xticks1=linspace(1,length(recordTime),tNum);%[1 1800 length(recordTime)];
+xticklabels1 = {};
+for xti = 1:length(xticks1)
+    xticklabels1{1,xti} = recordTime{1,floor(xticks1(xti))}(12:end-3);
+end
+cno_TH = 0; % select satellites with better C/N0
+
+%% plot 
+% display various gnss [GPS  0; Galileo 2; BDS  3;  QZSS  5; GLONASS 6]
+if gnssId == 0  % GPS
+    figure(1)
+    set(gcf, 'Position', [100, 100, 1000, 260]); % 设置Figure窗口的位置和大小
+    m=1; n=4;
+    dim=32;gnss="G";
+    
+    subplot('position', [0.05 0.15 subplotWid subplotht])
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    for i=sats
+        if mean(cn0_G1(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_G1=cn0_G1(i,:);
+            icn0_G1(icn0_G1 == 0) = NaN;
+            plot(icn0_G1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), " L1C/A");
+        end
+    end
+    for i=sats
+        if mean(cn0_G2(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_G2=cn0_G2(i,:);
+            icn0_G2(icn0_G2 == 0) = NaN;
+            plot(icn0_G2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L2C');
+        end
+    end
+    lgd = legend;
+    legend(lgds,NumColumns=12)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',12);
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    xlabel('(a)');hold off;
+    
+    
+subplot('position', [0.305 0.15 subplotWid subplotht])
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    for i=sats
+        if mean(cn0_G1(i,:))>cno_TH
+            clgd =clgd +1;
+            idoMes_G1=doMes_G1(i,:);
+            idoMes_G1(idoMes_G1 == 0) = NaN;
+            plot(idoMes_G1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L1C/A');
+        end
+    end
+    for i=sats
+        if mean(cn0_G2(:,i))>cno_TH
+            clgd =clgd +1;
+            idoMes_G2=doMes_G2(i,:);
+            idoMes_G2(idoMes_G2 == 0) = NaN;
+            plot(idoMes_G2,'-.',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L2C');
+        end
+    end
+    legend(lgds,NumColumns=2)
+    ylabel('Doppler [Hz]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(b)');hold off;
+    
+    
+subplot('position', [0.545 0.15 subplotWid subplotht])
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    for i=sats
+        if mean(cn0_G1(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_G1=prMes_G1(i,:);
+            iprMes_G1(iprMes_G1 == 0) = NaN;
+            plot(iprMes_G1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L1C/A');
+        end
+    end
+    for i=sats
+        if mean(cn0_G2(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_G2=prMes_G2(i,:);
+            iprMes_G2(iprMes_G2 == 0) = NaN;
+            plot(iprMes_G2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L2C');
+        end
+    end
+    legend(lgds,NumColumns=2)
+    ylabel('Pseudorange [m]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(c)');hold off;
+    
+    
+subplot('position', [0.79 0.15 subplotWid subplotht])
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    for i=sats
+        if mean(cn0_G1(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_G1=cpMes_G1(i,:);
+            icpMes_G1(icpMes_G1 == 0) = NaN;
+            plot(icpMes_G1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L1C/A');
+        end
+    end
+    for i=sats
+        if mean(cn0_G2(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_G2=cpMes_G2(i,:);
+            icpMes_G2(icpMes_G2 == 0) = NaN;
+            plot(icpMes_G2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = strcat(gnss, num2str(i), ' L2C');
+        end
+    end
+    ylabel('Carrier Phase [Cycles]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(d)');hold off;
+    saveas(gcf,'GPS_sat_obs.png')
+    
+    % display the skyplot
+    elev = elev_G';azim = azim_G';
+    satSkyPlot(gnssId,elev,azim,sats)
+    saveas(gcf, 'GPS_satSkyPlot.png')
+end
+
+if gnssId == 2
+    figure(1)
+    set(gcf, 'Position', [100, 100, 1000, 260]); % 设置Figure窗口的位置和大小
+    m=1; n=4;
+    dim=36;gnss='E';
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    subplot('position', [0.05 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_E1(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_E1=cn0_E1(i,:);
+            icn0_E1(icn0_E1 == 0) = NaN;
+            plot(icn0_E1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_E2(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_E2=cn0_E2(i,:);
+            icn0_E2(icn0_E2 == 0) = NaN;
+            plot(icn0_E2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E5b'];
+        end
+    end
+    lgd = legend;
+    legend(lgds,NumColumns=8)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',8);
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    xlabel('(a)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.305 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_E1(i,:))>cno_TH
+            clgd =clgd +1;
+            idoMes_E1=doMes_E1(i,:);
+            idoMes_E1(idoMes_E1 == 0) = NaN;
+            plot(idoMes_E1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_E2(:,i))>cno_TH
+            clgd =clgd +1;
+            idoMes_E2=doMes_E2(i,:);
+            idoMes_E2(idoMes_E2 == 0) = NaN;
+            plot(idoMes_E2,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E5b'];
+        end
+    end
+    ylabel('Doppler [Hz]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(b)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.545 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_E1(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_E1=prMes_E1(i,:);
+            iprMes_E1(iprMes_E1 == 0) = NaN;
+            plot(iprMes_E1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_E2(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_E2=prMes_E2(i,:);
+            iprMes_E2(iprMes_E2 == 0) = NaN;
+            plot(iprMes_E2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E5b'];
+        end
+    end
+    ylabel('Pseudorange [m]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(c)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.79 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_E1(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_E1=cpMes_E1(i,:);
+            icpMes_E1(icpMes_E1 == 0) = NaN;
+            plot(icpMes_E1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_E2(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_E2=cpMes_E2(i,:);
+            icpMes_E2(icpMes_E2 == 0) = NaN;
+            plot(icpMes_E2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' E5b'];
+        end
+    end
+    ylabel('Carrier Phase [Cycles]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(d)');hold off;
+    saveas(gcf,'Galileo_sat_obs.png')
+
+    % display the skyplot
+    elev = elev_E';azim = azim_E';
+    satSkyPlot(gnssId,elev,azim,sats)
+    saveas(gcf, 'Galileo_satSkyPlot.png')
+end
+
+if gnssId == 3
+    figure(1)
+    set(gcf, 'Position', [100, 100, 1000, 260]); % 设置Figure窗口的位置和大小
+    m=1; n=4;
+    dim=63;gnss='B';
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    subplot('position', [0.05 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_B1(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_B1=cn0_B1(i,:);
+            icn0_B1(icn0_B1 == 0) = NaN;
+            plot(icn0_B1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_B2(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_B2=cn0_B2(i,:);
+            icn0_B2(icn0_B2 == 0) = NaN;
+            plot(icn0_B2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B2'];
+        end
+    end
+    lgd = legend;
+    legend(lgds,NumColumns=8)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',8);
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    xlabel('(a)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.305 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_B1(i,:))>cno_TH
+            clgd =clgd +1;
+            idoMes_B1=doMes_B1(i,:);
+            idoMes_B1(idoMes_B1 == 0) = NaN;
+            plot(idoMes_B1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_B2(:,i))>cno_TH
+            clgd =clgd +1;
+            idoMes_B2=doMes_B2(i,:);
+            idoMes_B2(idoMes_B2 == 0) = NaN;
+            plot(idoMes_B2,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B2'];
+        end
+    end
+    ylabel('Doppler [Hz]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(b)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.545 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_B1(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_B1=prMes_B1(i,:);
+            iprMes_B1(iprMes_B1 == 0) = NaN;
+            plot(iprMes_B1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_B2(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_B2=prMes_B2(i,:);
+            iprMes_B2(iprMes_B2 == 0) = NaN;
+            plot(iprMes_B2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B2'];
+        end
+    end
+    ylabel('Pseudorange [m]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(c)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.79 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_B1(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_B1=cpMes_B1(i,:);
+            icpMes_B1(icpMes_B1 == 0) = NaN;
+            plot(icpMes_B1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_B2(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_B2=cpMes_B2(i,:);
+            icpMes_B2(icpMes_B2 == 0) = NaN;
+            plot(icpMes_B2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' B2'];
+        end
+    end
+    ylabel('Carrier Phase [Cycles]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(d)');hold off;
+    saveas(gcf,'BDS_sat_obs.png')
+
+    % display the skyplot
+    elev = elev_B';azim = azim_B';
+    satSkyPlot(gnssId,elev,azim,sats)
+    saveas(gcf, 'BDS_satSkyPlot.png')
+end
+
+if gnssId == 5
+    figure(1)
+    set(gcf, 'Position', [100, 100, 1000, 260]); % 设置Figure窗口的位置和大小
+    m=1; n=4;
+    dim=10;gnss='Q';
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    subplot('position', [0.05 0.15 subplotWid subplotht])
+  
+    for i=sats
+        if mean(cn0_Q1(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_Q1=cn0_Q1(i,:);
+            icn0_Q1(icn0_Q1 == 0) = NaN;
+            plot(icn0_Q1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q1'];
+        end
+    end
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    lgd = legend;
+    legend(lgds,NumColumns=8)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',8);
+
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    for i=sats
+        if mean(cn0_Q2(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_Q2=cn0_Q2(i,:);
+            icn0_Q2(icn0_Q2 == 0) = NaN;
+            plot(icn0_Q2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q2'];
+        end
+    end
+    lgd = legend;
+    legend(lgds,NumColumns=8)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',8);
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    xlabel('(a)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.305 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_Q1(i,:))>cno_TH
+            clgd =clgd +1;
+            idoMes_Q1=doMes_Q1(i,:);
+            idoMes_Q1(idoMes_Q1 == 0) = NaN;
+            plot(idoMes_Q1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_Q2(:,i))>cno_TH
+            clgd =clgd +1;
+            idoMes_Q2=doMes_Q2(i,:);
+            idoMes_Q2(idoMes_Q2 == 0) = NaN;
+            plot(idoMes_Q2,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q2'];
+        end
+    end
+    ylabel('Doppler [Hz]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(b)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.545 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_Q1(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_Q1=prMes_Q1(i,:);
+            iprMes_Q1(iprMes_Q1 == 0) = NaN;
+            plot(iprMes_Q1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_Q2(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_Q2=prMes_Q2(i,:);
+            iprMes_Q2(iprMes_Q2 == 0) = NaN;
+            plot(iprMes_Q2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q2'];
+        end
+    end
+    ylabel('Pseudorange [m]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(c)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.79 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_Q1(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_Q1=cpMes_Q1(i,:);
+            icpMes_Q1(icpMes_Q1 == 0) = NaN;
+            plot(icpMes_Q1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_Q2(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_Q2=cpMes_Q2(i,:);
+            icpMes_Q2(icpMes_Q2 == 0) = NaN;
+            plot(icpMes_Q2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' Q2'];
+        end
+    end
+    ylabel('Carrier Phase [Cycles]')
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1)
+    xlabel('(d)');hold off;
+    saveas(gcf,'QZSS_sat_obs.png')
+
+    % display the skyplot
+    elev = elev_Q';azim = azim_Q';
+    satSkyPlot(gnssId,elev,azim,sats)
+    saveas(gcf, 'QZSS_satSkyPlot.png')
+end
+
+if gnssId == 6
+    figure(1)
+    set(gcf, 'Position', [100, 100, 1000, 260]); % 设置Figure窗口的位置和大小
+    m=1; n=4;
+    dim=32;gnss='R';
+    lgds = {};clgd = 0;LineWidth1=1.8;
+    subplot('position', [0.05 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_R1(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_R1=cn0_R1(i,:);
+            icn0_R1(icn0_R1 == 0) = NaN;
+            plot(icn0_R1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_R2(i,:))>cno_TH
+            clgd =clgd +1;
+            icn0_R2=cn0_R2(i,:);
+            icn0_R2(icn0_R2 == 0) = NaN;
+            plot(icn0_R2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R2'];
+        end
+    end
+    lgd = legend;
+    legend(lgds,NumColumns=8)
+    set(lgd,...
+        'Position',[0.3499074121426652 0.856073484898151 0.305555547790394 0.104999997019768],...
+        'NumColumns',8);
+    xticks(xticks1);xlim([0,len])
+    xticklabels(xticklabels1);ylabel('C/N_0 [dB-Hz]')
+    xlabel('(a)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.305 0.15 subplotWid subplotht])
+    for i=sats
+        if mean(cn0_R1(i,:))>cno_TH
+            clgd =clgd +1;
+            idoMes_R1=doMes_R1(i,:);
+            idoMes_R1(idoMes_R1 == 0) = NaN;
+            plot(idoMes_R1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R1'];
+        end
+    end
+    for i=sats
+        if mean(cn0_R2(:,i))>cno_TH
+            clgd =clgd +1;
+            idoMes_R2=doMes_R2(i,:);
+            idoMes_R2(idoMes_R2 == 0) =NaN;
+            plot(idoMes_R2,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R2'];
+        end
+    end
+    ylabel('Doppler [Hz]');xlim([0,len])
+    xticks(xticks1)
+    xticklabels(xticklabels1)
+    xlabel('(b)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.545 0.15 subplotWid subplotht])
+    for i=1:dim
+        if mean(cn0_R1(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_R1=prMes_R1(i,:);
+            iprMes_R1(iprMes_R1 == 0) =NaN;
+            plot(iprMes_R1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R1'];
+        end
+    end
+    for i=1:dim
+        if mean(cn0_R2(i,:))>cno_TH
+            clgd =clgd +1;
+            iprMes_R2=prMes_R2(i,:);
+            iprMes_R2(iprMes_R2 == 0) = NaN;
+            plot(iprMes_R2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R2'];
+        end
+    end
+    ylabel('Pseudorange [m]');xlim([0,len])
+    xticks(xticks1)
+    xticklabels(xticklabels1)
+    xlabel('(c)');hold off;
+    
+    lgds = {};clgd = 0;LineWidth1=1.8;
+subplot('position', [0.79 0.15 subplotWid subplotht])
+    for i=1:dim
+        if mean(cn0_R1(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_R1=cpMes_R1(i,:);
+            icpMes_R1(icpMes_R1 == 0) = NaN;
+            plot(icpMes_R1,'-',LineWidth=LineWidth1);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R1'];
+        end
+    end
+    for i=1:dim
+        if mean(cn0_R2(i,:))>cno_TH
+            clgd =clgd +1;
+            icpMes_R2=cpMes_R2(i,:);
+            icpMes_R2(icpMes_R2 == 0) = NaN;
+            plot(icpMes_R2,'-.',LineWidth=1.2);hold on;
+            lgds{1,clgd} = [gnss, num2str(i), ' R2'];
+        end
+    end
+    ylabel('Carrier Phase [Cycles]')
+    xticks(xticks1)
+    xticklabels(xticklabels1)
+    xlabel('(d)');hold off;xlim([0,len])
+    saveas(gcf,'GLONASS_sat_obs.png')
+
+    % display the skyplot
+    elev = elev_R';azim = azim_R';
+    satSkyPlot(gnssId,elev,azim,sats)
+    saveas(gcf, 'GLONASS_satSkyPlot.png')
+end
+
+%% plot the position, velocity and time (PVT) solution of the receiver.
+% 1. PVT(P)
+subplotWid = 0.25;subplotht = 0.34;
+figure(101);
+set(gcf, 'Position', [100, 100, 1500, 550]);
+% subplot(231)
+subplot('position', [0.08 0.60 subplotWid subplotht])
+plot(lon,LineWidth=2,Color='r');xlim([0,len])
+legend('Longitude (deg)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(a)');set(gca,'FontSize',15)
+
+% subplot(232)
+subplot('position', [0.41 0.60 subplotWid subplotht])
+plot(lat,LineWidth=2,Color='g');xlim([0,len])
+legend('Latitude (deg)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(b)');set(gca,'FontSize',15)
+
+% subplot(233)
+subplot('position', [0.73 0.60 subplotWid subplotht])
+plot(height,LineWidth=2,Color='b');xlim([0,len])
+legend('Height (mm)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(c)');hold off;set(gca,'FontSize',15)
+
+% subplot(234)
+subplot('position', [0.08 0.13 subplotWid subplotht])
+plot(ecefX,LineWidth=2,Color='r');xlim([0,len])
+legend('ECEFX (cm)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(d)');set(gca,'FontSize',15)
+
+% subplot(235)
+subplot('position', [0.41 0.13 subplotWid subplotht])
+plot(ecefY,LineWidth=2,Color='g');xlim([0,len])
+legend('ECEFY (cm)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(e)');set(gca,'FontSize',15)
+
+% subplot(236)
+subplot('position', [0.73 0.13 subplotWid subplotht])
+plot(ecefZ,LineWidth=2,Color='b');xlim([0,len])
+legend('ECEFZ (cm)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(f)');set(gca,'FontSize',15)
+saveas(gcf,'PVT(P).png')
+
+% 2. PVT(V)
+subplotWid = 0.28;subplotht = 0.70;
+fig = figure('Position', [100, 100, 1259, 300]);
+subplot('position', [0.04 0.25 subplotWid subplotht])
+plot(velE,LineWidth=2,Color='r');xlim([0,len])
+legend('East  velocity (mm/s)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(a)');set(gca,'FontSize',15)
+
+subplot('position', [0.37 0.25 subplotWid subplotht])
+plot(velD,LineWidth=2,Color='g');xlim([0,len])
+legend('Down velocity (mm/s)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(b)');set(gca,'FontSize',15)
+
+subplot('position', [0.70 0.25 subplotWid subplotht])
+plot(velN,LineWidth=2,Color='b');xlim([0,len])
+legend('North velocity (mm/s)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(c)');set(gca,'FontSize',15)
+saveas(gcf,'PVT(V).png')
+
+% 3. PVT(T)
+subplotWid = 0.195;subplotht = 0.63;
+fig = figure('Position', [100, 100, 1250, 300]);
+subplot('position', [0.035 0.25 subplotWid subplotht])
+plot(clkB,'r',LineWidth=2);xlim([0,len])
+legend('Clock bias (ns)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(a)');
+set(gca,'FontSize',15)
+
+subplot('position', [0.287 0.25 subplotWid subplotht])
+plot(clkD,'g',LineWidth=2);xlim([0,len])
+legend('Clock drift (ns/s)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(b)');
+set(gca,'FontSize',15)
+
+subplot('position', [0.53 0.25 subplotWid subplotht])
+plot(tAcc,'b',LineWidth=2);xlim([0,len])
+legend('tAcc (ns)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(c)');
+set(gca,'FontSize',15)
+
+subplot('position', [0.777 0.25 subplotWid subplotht])
+plot(fAcc,'m',LineWidth=2);xlim([0,len])
+legend('fAcc (ps/s)');xticks(xticks1)
+xticklabels(xticklabels1);
+xlabel('(d)');
+set(gca,'FontSize',15)
+saveas(gcf,'PVT(T).png')
+
+% 4. DOPs
+fig = figure('Position', [100, 100, 1000, 300]);
+dops = [gDOP;pDOP;tDOP;vDOP;hDOP;nDOP;eDOP;]';
+plot(dops,LineWidth=2);xlim([0,len])
+lgds = {'gDOP','pDOP','tDOP','vDOP','hDOP','nDOP','eDOP'};
+legend(lgds,NumColumns=4)
+xticks(xticks1)
+xticklabels(xticklabels1);
+set(gca,'FontSize',15)
+saveas(gcf,'longTerm_DOP.png')
