@@ -72,9 +72,10 @@
 * Connect the **u-blox** to a **logging machine** (PC/embedded) that saves both observables and status messages.
 * Use an **SDR** (e.g., HackRF One) for *spoofing* and a **jammer** for *jamming* **only in controlled environments** and with **regulatory permission** (legal compliance and operational safety).
 
-## 7) Main Reference
+## 7) Hardware
 
-* **Dataset article**: *Data in Brief* (Elsevier). Link provided by the user:
-  [https://www.sciencedirect.com/science/article/pii/S2352340924002713](https://www.sciencedirect.com/science/article/pii/S2352340924002713)
-
-* **u-blox documentation (example):** *u-blox F9 High Precision GNSS – Interface Description (HPS)* (to understand UBX messages such as `RAWX`, `PVT`, etc.).
+* **Hardware:**
+  
+  GNSS receptor
+  - https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html
+  - https://es.aliexpress.com/item/1005007991451892.html?spm=a2g0o.tesla.0.0.3f17zwMXzwMXMJ&afTraceInfo=1005007991451892__pc__c_ppc_item_bridge_pc_main__6Jbb8Aa__1762820595680&gatewayAdapt=glo2esp
