@@ -87,6 +87,7 @@
 
   - HackRF Uno: https://greatscottgadgets.com/hackrf/one/
     For more information please go to the Reference Papper (GNSS interference and spoofing dataset ) in section 4. Experimental Design, Materials and Methods: (https://www.sciencedirect.com/science/article/pii/S2352340924002713?ref=pdf_download&fr=RR-2&rr=90ca5490ce63eda7)
+    
 | Radio Node                 | Parameter                         | Description                                                                       |
 | -------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
 | HackRF One transmiter node | Antenna                           | Antenna type                                                                      |
