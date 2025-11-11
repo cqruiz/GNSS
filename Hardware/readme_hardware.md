@@ -76,6 +76,9 @@
 
 * **Hardware:**
   
-  GNSS receptor
+  GNSS receptor/ u-blox Receiver  
   - https://www.sparkfun.com/sparkfun-gps-rtk2-board-zed-f9p-qwiic-gps-15136.html
   - https://es.aliexpress.com/item/1005007991451892.html?spm=a2g0o.tesla.0.0.3f17zwMXzwMXMJ&afTraceInfo=1005007991451892__pc__c_ppc_item_bridge_pc_main__6Jbb8Aa__1762820595680&gatewayAdapt=glo2esp
+ 
+  GNSS Antenna
+  - https://www.sparkfun.com/u-blox-multi-band-active-gnss-antenna-l1-l5-ann-mb5.html
